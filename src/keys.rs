@@ -11,10 +11,41 @@ pub enum Value {
     String(String),
     /// Integer
     Integer(i64),
-    /// float
+    /// Float
     Float(f64),
     /// Bool
     Boolean(bool),
+}
+
+impl Value {
+    /// If the Value is a Float, returns the associated f64. Returns None otherwise.
+    pub fn as_f64(&self) -> Option<f64> {
+        match self {
+            Value::Float(x) => Some(*x),
+            _ => None,
+        }
+    }
+    /// If the Value is an Integer, returns the associated i64. Returns None otherwise.
+    pub fn as_i64(&self) -> Option<i64> {
+        match self {
+            Value::Integer(x) => Some(*x),
+            _ => None,
+        }
+    }
+    /// If the Value is a String, returns the associated str. Returns None otherwise.
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Value::String(ref x) => Some(x),
+            _ => None,
+        }
+    }
+    /// If the Value is a Boolean, returns the associated bool. Returns None otherwise.
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Value::Boolean(x) => Some(*x),
+            _ => None,
+        }
+    }
 }
 
 /// influxdb point
