@@ -105,7 +105,10 @@ fn use_macro() {
         let point = point.add_timestamp(1_508_981_970);
         let point1 = point1.add_timestamp(1_508_982_026);
 
-        client.write_points([point, point1].iter(), None, None).await.unwrap();
+        client
+            .write_points([point, point1].iter(), None, None)
+            .await
+            .unwrap();
 
         client.query("select * from test4", None).await.unwrap();
 
