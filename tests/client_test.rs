@@ -61,10 +61,8 @@ fn use_points() {
             .add_tag("float", Value::Float(12.6))
             .add_field("fd", Value::String("'3'".to_string()));
 
-        let points = Points::create_new(vec![point1, point]);
-
         client
-            .write_points(points, Some(Precision::Seconds), None)
+            .write_points([point1, point].iter(), Some(Precision::Seconds), None)
             .await
             .unwrap();
 
@@ -107,8 +105,7 @@ fn use_macro() {
         let point = point.add_timestamp(1_508_981_970);
         let point1 = point1.add_timestamp(1_508_982_026);
 
-        let points = points![point, point1];
-        client.write_points(points, None, None).await.unwrap();
+        client.write_points([point, point1].iter(), None, None).await.unwrap();
 
         client.query("select * from test4", None).await.unwrap();
 

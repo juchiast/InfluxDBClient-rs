@@ -119,17 +119,16 @@ fn escape_string_field_value(value: &str) -> String {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::{Point, Points};
+    use crate::Point;
 
     #[test]
     fn line_serialization_test() {
         let point = Point::new("test")
             .add_field("somefield", Value::Integer(65))
             .add_tag("sometag", Value::Boolean(false));
-        let points = Points::new(point);
 
         assert_eq!(
-            line_serialization(points),
+            line_serialization([point].iter()),
             "test,sometag=false somefield=65i\n"
         )
     }
