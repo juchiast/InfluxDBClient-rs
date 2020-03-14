@@ -1,25 +1,28 @@
 use crate::{Point, Value};
 
 /// Resolve the points to line protocol format
-pub(crate) fn line_serialization<T: Iterator<Item = Point>>(points: T) -> String {
-    let mut line = Vec::new();
+pub(crate) fn line_serialization<'a, T: Iterator<Item = &'a Point>>(points: T) -> String {
+    let mut line = String::new();
     for point in points {
-        line.push(escape_measurement(&point.measurement));
+        line.push_str(&escape_measurement(&point.measurement));
 
-        for (tag, value) in point.tags {
-            line.push(",".to_string());
-            line.push(escape_keys_and_tags(&tag));
-            line.push("=".to_string());
+        for (tag, value) in &point.tags {
+            line.push(',');
+            line.push_str(&escape_keys_and_tags(&tag));
+            line.push('=');
 
             match value {
-                Value::String(s) => line.push(escape_keys_and_tags(&s)),
-                Value::Float(f) => line.push(f.to_string()),
-                Value::Integer(i) => line.push(i.to_string() + "i"),
-                Value::Boolean(b) => line.push({
-                    if b {
-                        "true".to_string()
+                Value::String(s) => line.push_str(&escape_keys_and_tags(&s)),
+                Value::Float(f) => line.push_str(&f.to_string()),
+                Value::Integer(i) => {
+                    line.push_str(&i.to_string());
+                    line.push('i');
+                }
+                Value::Boolean(b) => line.push_str({
+                    if *b {
+                        "true"
                     } else {
-                        "false".to_string()
+                        "false"
                     }
                 }),
             }
@@ -27,46 +30,46 @@ pub(crate) fn line_serialization<T: Iterator<Item = Point>>(points: T) -> String
 
         let mut was_first = true;
 
-        for (field, value) in point.fields {
-            line.push(
-                {
-                    if was_first {
-                        was_first = false;
-                        " "
-                    } else {
-                        ","
-                    }
+        for (field, value) in &point.fields {
+            line.push_str({
+                if was_first {
+                    was_first = false;
+                    " "
+                } else {
+                    ","
                 }
-                .to_string(),
-            );
-            line.push(escape_keys_and_tags(&field));
-            line.push("=".to_string());
+            });
+            line.push_str(&escape_keys_and_tags(&field));
+            line.push('=');
 
             match value {
                 Value::String(s) => {
-                    line.push(escape_string_field_value(&s.replace("\\\"", "\\\\\"")))
+                    line.push_str(&escape_string_field_value(&s.replace("\\\"", "\\\\\"")))
                 }
-                Value::Float(f) => line.push(f.to_string()),
-                Value::Integer(i) => line.push(i.to_string() + "i"),
-                Value::Boolean(b) => line.push({
-                    if b {
-                        "true".to_string()
+                Value::Float(f) => line.push_str(&f.to_string()),
+                Value::Integer(i) => {
+                    line.push_str(&i.to_string());
+                    line.push('i')
+                }
+                Value::Boolean(b) => line.push_str({
+                    if *b {
+                        "true"
                     } else {
-                        "false".to_string()
+                        "false"
                     }
                 }),
             }
         }
 
         if let Some(t) = point.timestamp {
-            line.push(" ".to_string());
-            line.push(t.to_string());
+            line.push(' ');
+            line.push_str(&t.to_string());
         }
 
-        line.push("\n".to_string())
+        line.push('\n');
     }
 
-    line.join("")
+    line
 }
 
 #[inline]

@@ -103,19 +103,19 @@ impl Client {
         point: Point,
         precision: Option<Precision>,
         rp: Option<&str>,
-    ) -> impl Future<Output = Result<(), error::Error>> {
-        let points = Points::new(point);
-        self.write_points(points, precision, rp)
+    ) -> impl Future<Output = Result<(), error::Error>> + 'static {
+        let points = [point];
+        self.write_points(points.iter(), precision, rp)
     }
 
     /// Write multiple points to the database
-    pub fn write_points<T: Iterator<Item = Point>>(
+    pub fn write_points<'a, T: Iterator<Item = &'a Point>>(
         &self,
         points: T,
         precision: Option<Precision>,
         rp: Option<&str>,
-    ) -> impl Future<Output = Result<(), error::Error>> {
-        let line = serialization::line_serialization(points);
+    ) -> std::pin::Pin<Box<dyn Future<Output = Result<(), error::Error>> + Send + 'static>> {
+        let line = serialization::line_serialization(points.into_iter());
 
         let mut param = vec![("db", self.db.as_str())];
 
@@ -149,6 +149,7 @@ impl Client {
                 _ => Err(error::Error::Unknow("There is something wrong".to_string())),
             }
         }
+        .boxed()
     }
 
     /// Query and return data, the data type is `Option<Vec<Node>>`
@@ -505,7 +506,7 @@ impl UdpClient {
     pub fn write_points(&self, points: Points) -> Result<(), error::Error> {
         let socket = UdpSocket::bind("0.0.0.0:0")?;
 
-        let line = serialization::line_serialization(points);
+        let line = serialization::line_serialization(points.point.iter());
         let line = line.as_bytes();
         socket.send_to(&line, self.hosts.as_slice())?;
 
